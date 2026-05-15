@@ -13,22 +13,22 @@ The user navigates the site like a spy accessing a classified dossier — unlock
 
 ## File Structure
 
-All files must be kept in the **same folder**. The site will not work correctly if any file is missing or placed in a subdirectory.
+All files must be kept in the **same folder**. The site will not work correctly if any file is missing or placed in a subdirectory.\n
 /
-├── index.html          # Main website (all pages, logic, and styling in one file)
-├── spy_music.mp3       # Background music that plays on entry
-│
-├── anya_profile.png    # Character portrait — Anya Forger
-├── loid_profile.png    # Character portrait — Loid Forger
-├── yor_profile.png     # Character portrait — Yor Forger
-├── bond_profile.png    # Character portrait — Bond Forger
-│
-├── pink.png            # Puzzle piece — Anya (pink)
-├── red.png             # Puzzle piece — Yor (red/maroon)
-├── yellow.png          # Puzzle piece — Loid (yellow)
-├── blue.png            # Puzzle piece — Bond (blue)
-│
-└── puzzle_pieces.png   # Reference image of the full assembled puzzle
+├── index.html\t\t          # Main website (all pages, logic, and styling in one file)\n
+├── spy_music.mp3\t\t       # Background music that plays on entry\n
+│\n
+├── anya_profile.png\t\t    # Character portrait — Anya Forger\n
+├── loid_profile.png\t\t    # Character portrait — Loid Forger\n
+├── yor_profile.png\t\t     # Character portrait — Yor Forger\n
+├── bond_profile.png\t\t    # Character portrait — Bond Forger\n
+│\n
+├── pink.png\t\t            # Puzzle piece — Anya (pink)\n
+├── red.png\t\t             # Puzzle piece — Yor (red/maroon)\n
+├── yellow.png\t\t          # Puzzle piece — Loid (yellow)\n
+├── blue.png\t\t            # Puzzle piece — Bond (blue)\n
+│\n
+└── puzzle_pieces.png\t\t   # Reference image of the full assembled puzzle\n
 
 > **Important:** All `.png` and `.mp3` files are referenced by filename directly in `index.html`. Do not rename any files or move them into subfolders, or images and audio will break.
 
