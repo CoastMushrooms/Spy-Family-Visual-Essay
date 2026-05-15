@@ -11,25 +11,6 @@ The user navigates the site like a spy accessing a classified dossier — unlock
 
 ---
 
-## File Structure
-
-All files must be kept in the **same folder**. The site will not work correctly if any file is missing or placed in a subdirectory.\n
-/
-├── index.html\t\t          # Main website (all pages, logic, and styling in one file)\n
-├── spy_music.mp3\t\t       # Background music that plays on entry\n
-│\n
-├── anya_profile.png\t\t    # Character portrait — Anya Forger\n
-├── loid_profile.png\t\t    # Character portrait — Loid Forger\n
-├── yor_profile.png\t\t     # Character portrait — Yor Forger\n
-├── bond_profile.png\t\t    # Character portrait — Bond Forger\n
-│\n
-├── pink.png\t\t            # Puzzle piece — Anya (pink)\n
-├── red.png\t\t             # Puzzle piece — Yor (red/maroon)\n
-├── yellow.png\t\t          # Puzzle piece — Loid (yellow)\n
-├── blue.png\t\t            # Puzzle piece — Bond (blue)\n
-│\n
-└── puzzle_pieces.png\t\t   # Reference image of the full assembled puzzle\n
-
 > **Important:** All `.png` and `.mp3` files are referenced by filename directly in `index.html`. Do not rename any files or move them into subfolders, or images and audio will break.
 
 ---
