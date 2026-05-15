@@ -1,0 +1,692 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Dossier: Operation Strix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --spy-red: #d93f3f;
+            --spy-teal: #4b7c7c;
+            --accent-gold: #d4af37;
+            --paper: #fffef2;
+            --locked-bg: #e2e8f0;
+            --row-bg: rgba(255, 255, 255, 0.4);
+        }
+
+        * { box-sizing: border-box; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Poppins', sans-serif; background: #fdf6e3; color: #444;
+            overflow-x: hidden; scroll-behavior: smooth;
+        }
+
+        #start-screen {
+            position: fixed; inset: 0; z-index: 5000;
+            background: radial-gradient(circle, var(--spy-teal), #1a2e2e);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .folder-container {
+            width: 300px; height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+
+        .folder-cover {
+            position: absolute; inset: 0;
+            background: #c2a378;
+            border-radius: 5px 20px 5px 5px;
+            z-index: 3;
+            transform-origin: left;
+            transition: transform 1.2s cubic-bezier(.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backface-visibility: hidden;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.4);
+        }
+
+        .folder-inside-paper {
+            position: absolute; inset: 15px;
+            background: var(--paper);
+            z-index: 2;
+            padding: 20px;
+            color: #333;
+            font-family: 'Special Elite';
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            transition: transform 2.5s ease-in-out 2s, opacity 0.8s ease 2.5s;
+        }
+
+        .folder-container.open .folder-cover { transform: rotateY(-140deg); }
+        .folder-container.open .folder-inside-paper { transform: translateY(-110%) scale(1.05); opacity: 0; }
+
+        #intro-page {
+            position: fixed; inset: 0; z-index: 4500;
+            background: radial-gradient(circle, #3a5e5e, #2c4a4a);
+            display: none; align-items: center; justify-content: center;
+        }
+
+        .briefing-card {
+            background: var(--paper);
+            width: 90%; max-width: 600px;
+            padding: 40px;
+            border-radius: 15px;
+            border: 10px solid white;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .briefing-card.visible { transform: translateY(0); opacity: 1; }
+        .start-icon {
+            font-size: 100px; cursor: pointer; transition: 0.3s;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        }
+        .start-icon:hover { transform: scale(1.1) rotate(-5deg); }
+        
+        #thesis-page {
+            position: fixed; inset: 0; z-index: 4000;
+            background: radial-gradient(circle, #2c4a4a, #1a2e2e);
+            display: none; align-items: center; justify-content: center;
+        }
+
+        .thesis-card {
+            background: var(--paper);
+            width: 90%; max-width: 650px;
+            padding: 40px;
+            border-radius: 15px;
+            border: 10px solid white;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.8s ease;
+            font-family: 'Special Elite';
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        .thesis-card.visible { transform: translateY(0); opacity: 1; }
+
+        #main-page {
+            display: none; padding: 40px; min-height: 100vh;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 3px solid var(--accent-gold); margin-bottom: 40px; padding-bottom: 10px;
+        }
+
+        .timeline-grid {
+            display: flex; flex-direction: column; gap: 40px; max-width: 1300px; margin: 0 auto;
+        }
+
+        .character-row { 
+            display: flex; align-items: center; gap: 20px; 
+            background: var(--row-bg); padding: 20px; border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .char-photo-spot {
+            width: 120px; height: 120px; background: #ddd;
+            border: 4px solid white; border-radius: 8px;
+            overflow: hidden; flex-shrink: 0;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        .char-photo-spot img { width: 100%; height: 100%; object-fit: cover; }
+
+        .char-tag {
+            width: 160px; font-family: 'Special Elite'; font-size: 1.3rem;
+            color: var(--spy-teal); border-left: 5px solid var(--spy-red); padding-left: 15px;
+        }
+
+        .node-container { display: flex; align-items: center; gap: 60px; position: relative; flex-grow: 1; }
+        .node-container::before {
+            content: ""; position: absolute; top: 50%; left: 0; right: 0;
+            height: 3px; background: #e2e8f0; z-index: 1;
+        }
+
+        .node {
+            width: 140px; height: 60px; background: var(--locked-bg);
+            border: 2px solid #cbd5e1; border-radius: 12px; z-index: 2;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Special Elite'; font-size: 0.9rem; color: #94a3b8;
+            cursor: not-allowed; transition: 0.4s; box-shadow: 0 4px 0px #cbd5e1;
+        }
+
+        .node.unlocked { background: white; border-color: var(--spy-teal); color: var(--spy-teal); cursor: pointer; box-shadow: 0 4px 0px var(--spy-teal); }
+        .node.completed { background: var(--spy-teal); border-color: var(--accent-gold); color: white; box-shadow: 0 4px 0px var(--accent-gold); }
+
+        .strix-pod-container { margin-top: 80px; display: flex; justify-content: center; padding-bottom: 120px; }
+        #node-strix {
+            width: 300px; height: 100px; font-size: 1.3rem; background: #fff;
+            border: 4px dashed var(--spy-red); color: #94a3b8; border-radius: 20px;
+        }
+        #node-strix.ready { 
+            background: var(--paper); color: var(--spy-red); cursor: pointer; 
+            border-style: solid; box-shadow: 0 0 30px rgba(217, 63, 63, 0.4);
+            animation: pulse-red 2s infinite;
+        }
+
+        #node-strix.accessed {
+            background: var(--paper); color: var(--spy-red); cursor: pointer; 
+            border-style: solid; box-shadow: 0 0 30px rgba(217, 63, 63, 0.4);
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .pod-dossier {
+            background: var(--paper); 
+            width: 850px;
+            height: 85vh;
+            padding: 30px; border-radius: 15px; border: 10px solid white;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            position: relative; display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .pod-scroll {
+            overflow-y: auto; flex-grow: 1; padding-right: 20px; 
+            font-family: 'Special Elite'; line-height: 1.6; 
+            color: #000000; /* Text color changed to black */
+            font-size: 1.1rem; white-space: pre-line; margin-top: 10px;
+        }
+
+        .pod-scroll::-webkit-scrollbar { width: 10px; }
+        .pod-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .pod-scroll::-webkit-scrollbar-thumb { background: var(--spy-teal); border-radius: 10px; }
+
+        .close-btn {
+            margin-top: 15px; padding: 12px 25px; background: var(--spy-teal);
+            color: white; border: none; font-family: 'Special Elite'; cursor: pointer; align-self: flex-end;
+            border-radius: 8px; font-weight: bold; flex-shrink: 0;
+        }
+
+        #puzzle-view { display: none; flex-direction: column; align-items: center; }
+        #finish-puzzle { 
+            align-self: center; margin-bottom: 20px; margin-top: 0;
+            background: var(--spy-red); font-size: 1.2rem; padding: 15px 30px;
+        }
+        .puzzle-grid {
+            display: grid; grid-template-columns: 180px 180px; grid-template-rows: 180px 180px;
+            gap: 2px; background: #eee; border: 5px solid var(--accent-gold); padding: 5px;
+            border-radius: 10px;
+        }
+        .drop-zone { width: 180px; height: 180px; background: #fff; border: 1px dashed #ccc; }
+        .inventory-tray {
+            display: flex; gap: 15px; margin-top: 20px; min-height: 100px;
+            padding: 10px; background: rgba(0,0,0,0.05); border-radius: 10px; 
+            width: 100%; justify-content: center;
+        }
+        .piece-img { width: 80px; height: 80px; cursor: grab; object-fit: contain; }
+
+        #piece-counter {
+            position: fixed; bottom: 30px; right: 30px;
+            background: white; border-radius: 50%; border: 5px solid var(--accent-gold);
+            width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Special Elite'; font-size: 1.5rem; color: var(--spy-teal);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); cursor: pointer; z-index: 100;
+        }
+
+        .counter-locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pulse { animation: pulse-gold 1s infinite; }
+
+        @keyframes pulse-gold {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+            100% { transform: scale(1); }
+        }
+
+        .piece-flying {
+            position: fixed; width: 80px; height: 80px; z-index: 5000;
+            animation: collect-fly 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+            pointer-events: none;
+        }
+        @keyframes collect-fly {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(0.2) translate(1200px, 1200px) rotate(720deg); opacity: 0; }
+        }
+
+        .final-family-photo {
+            max-width: 100%;
+            height: auto;
+            max-height: 350px; 
+            object-fit: contain;
+            border-radius: 15px;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            margin-bottom: 25px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .strix-sidebar {
+            width: 200px;
+            padding: 20px;
+            border-right: 2px solid var(--accent-gold);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .char-pod {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: background 0.3s;
+        }
+
+        .char-pod:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .char-pod img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-gold);
+        }
+
+        .strix-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        #strix-body {
+            overflow-y: auto;
+            max-height: calc(100% - 90px);
+            min-height: 0;
+            padding-right: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <audio id="background-music" loop>
+        <source src="spy_music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="start-screen">
+        <h1 style="font-family: 'Special Elite'; font-size: 4rem; color: var(--accent-gold); margin: 0;">OPERATION STRIX</h1>
+        <p style="letter-spacing: 5px; opacity: 0.8; margin-bottom: 30px;">CLASSIFIED DOSSIER</p>
+        
+        <div class="folder-container" id="folder-trigger" onclick="runIntroSequence()">
+            <div class="folder-cover">
+                <div style="font-size: 80px;">📂</div>
+                <p style="font-family: 'Special Elite'; color: #4d3a22; font-weight: bold;">TOP SECRET</p>
+            </div>
+            <div class="folder-inside-paper">
+                <div style="border: 2px solid var(--spy-red); color: var(--spy-red); padding: 5px; font-weight: bold; text-align: center;">MISSION BRIEF</div>
+                <p style="font-size: 0.75rem; margin-top: 10px;">Subject: Donovan Desmond<br>Target: Eden Academy<br>Status: URGENT</p>
+            </div>
+        </div>
+        
+        <p style="margin-top: 40px; font-family: 'Special Elite'; letter-spacing: 2px;">Click Case File to Open</p>
+    </div>
+
+    <div id="intro-page">
+        <div class="briefing-card" id="briefing-card">
+            <h2 style="font-family: 'Special Elite'; color: var(--spy-teal); border-bottom: 3px solid var(--accent-gold); padding-bottom:10px;">INTRODUCTION</h2>
+            <div style="font-family: 'Special Elite'; line-height: 1.8; margin-top: 20px;">
+                <p>In a world shaped by conflict and secrecy, adversity often isolates individuals in their attempts at survival. However, sometimes that adversity acts as a bonding agent, piecing people together. The anime <b>Spy x Family</b> explores this idea through the lenses of Loid Forger, a master spy, sent to carry out Operation Strix. His goal being to create a fake family and get close to a high level politician to prevent war from breaking out between the nations Westalis and Ostania. In his pursuit to create the "perfect family", Loid unknowingly marries Yor Briar, a seasoned assassin; adopts Anya, a telepath; and rescues Bond, a dog able to glance into the future. The fate of these nations are in Loid and his family's hands, will they measure up?</p>
+            </div>
+            <div style="text-align: right; margin-top: 30px;">
+                <button class="close-btn" onclick="showThesis()">PROCEED TO ANALYSIS →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="thesis-page">
+        <div class="thesis-card" id="thesis-card">
+            <h2 style="color: var(--spy-red); border-bottom: 2px dashed var(--spy-red); padding-bottom: 10px; margin-bottom: 20px;">CORE THESIS</h2>
+            <p style="font-size: 1.2rem;">
+                "Although the Forger family is built on a facade of deception, their bond is ironically more authentic than the 'normal' world around them. By examining Loid’s emotional repression, Yor’s social inadequacy, and Anya’s fear of abandonment, it becomes clear that their individual adversities are not just obstacles to be overcome, but the very traits that allow them to 'fill the gaps' in one another’s lives."
+            </p>
+            <div style="text-align: right; margin-top: 30px;">
+                <button class="close-btn" onclick="enterArchive()">ACCESS ARCHIVE →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-page">
+        <div class="header-bar">
+            <h2 style="font-family: 'Special Elite'; margin: 0; color: var(--spy-teal);">UNIT HISTORY ARCHIVE</h2>
+            <div id="status-tag" style="font-weight:bold; color:var(--spy-red)">[ STATUS: RESTRICTED ]</div>
+        </div>
+
+        <div class="timeline-grid">
+            <div class="character-row">
+                <div class="char-photo-spot"><img src="loid_profile.png" alt="Loid"></div>
+                <div class="char-tag">Loid Forger</div>
+                <div class="node-container">
+                    <div id="l1" class="node unlocked" onclick="openPod('l1')">File: Loid 1</div>
+                    <div id="l2" class="node" onclick="openPod('l2')">File: Loid 2</div>
+                    <div id="l3" class="node" onclick="openPod('l3')">File: Loid 3</div>
+                </div>
+            </div>
+            <div class="character-row">
+                <div class="char-photo-spot"><img src="yor_profile.png" alt="Yor"></div>
+                <div class="char-tag">Yor Forger</div>
+                <div class="node-container">
+                    <div id="y1" class="node unlocked" onclick="openPod('y1')">File: Yor 1</div>
+                    <div id="y2" class="node" onclick="openPod('y2')">File: Yor 2</div>
+                    <div id="y3" class="node" onclick="openPod('y3')">File: Yor 3</div>
+                </div>
+            </div>
+            <div class="character-row">
+                <div class="char-photo-spot"><img src="anya_profile.png" alt="Anya"></div>
+                <div class="char-tag">Anya Forger</div>
+                <div class="node-container">
+                    <div id="a1" class="node unlocked" onclick="openPod('a1')">File: Anya 1</div>
+                    <div id="a2" class="node" onclick="openPod('a2')">File: Anya 2</div>
+                    <div id="a3" class="node" onclick="openPod('a3')">File: Anya 3</div>
+                </div>
+            </div>
+            <div class="character-row">
+                <div class="char-photo-spot"><img src="bond_profile.png" alt="Bond"></div>
+                <div class="char-tag">Bond Forger</div>
+                <div class="node-container">
+                    <div id="b1" class="node unlocked" onclick="openPod('b1')">File: Bond 1</div>
+                    <div id="b2" class="node" onclick="openPod('b2')">File: Bond 2</div>
+                    <div id="b3" class="node" onclick="openPod('b3')">File: Bond 3</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="strix-pod-container" id="strix-section">
+            <div id="node-strix" class="node" onclick="openStrixReport()">OPERATION STRIX</div>
+        </div>
+
+        <div id="piece-counter" class="counter-locked" onclick="openPuzzleAssembly()">0/4</div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="pod-dossier" id="text-view">
+            <h2 id="modal-title" style="color: var(--spy-teal); border-bottom: 3px solid var(--accent-gold); padding-bottom:10px;">REPORT</h2>
+            <div class="pod-scroll" id="modal-body"></div>
+            <button class="close-btn" onclick="closeModal()">SECURE FILE</button>
+        </div>
+
+        <div class="pod-dossier" id="puzzle-view">
+            <h2 style="text-align:center; color: var(--spy-teal); margin-bottom:10px;">Family Photo Reconstruction</h2>
+            <button class="close-btn" id="finish-puzzle" style="display:none" onclick="finalizePuzzle()">BUILD</button>
+            <div class="puzzle-grid">
+                <div class="drop-zone" id="dz-red" data-req="piece-red"></div>
+                <div class="drop-zone" id="dz-yellow" data-req="piece-yellow"></div>
+                <div class="drop-zone" id="dz-pink" data-req="piece-pink"></div>
+                <div class="drop-zone" id="dz-blue" data-req="piece-blue"></div>
+            </div>
+            <div class="inventory-tray" id="tray"></div>
+        </div>
+
+        <div class="pod-dossier" id="final-view" style="display:none; text-align:center;">
+            <h1 style="color: var(--spy-red); margin-bottom:5px;">MISSION SUCCESS</h1>
+            <div class="pod-scroll">
+                <img src="Forger_Family_Photo_Anime.webp" class="final-family-photo" onclick="location.reload()">
+                <p style="margin-top:10px; font-weight: normal;">Despite that the Forger family is initially built off a lie, it evolves into something far more precious than each family member anticipates. Anya’s fear of abandonment, Loid’s emotional detachment, Yor’s struggle with her identity, and Bond’s trauma initially isolate them. However, within the safety of their unexpected family, their unique struggles allow them to connect and love one another. Rather than dividing them, their shared experiences with pain and loneliness become the very foundation of their bond, allowing them to “fill each other’s gaps.” In this way, adversity stops acting as an obstacle, but as the glue that binds them together.</p>
+                <p id="strix-conclusion-text" style="font-style: italic;"></p>
+            </div>
+            <button class="close-btn" onclick="location.reload()">MISSION COMPLETE</button>
+        </div>
+
+        <div class="pod-dossier" id="strix-view" style="display:none;">
+            <div style="display: flex; height: 100%;">
+                <div class="strix-sidebar">
+                    <div class="char-pod" onclick="showStrixPod('strix-l')">
+                        <img src="loid_profile.png" alt="Loid">
+                        <span>Loid Forger</span>
+                    </div>
+                    <div class="char-pod" onclick="showStrixPod('strix-y')">
+                        <img src="yor_profile.png" alt="Yor">
+                        <span>Yor Forger</span>
+                    </div>
+                    <div class="char-pod" onclick="showStrixPod('strix-a')">
+                        <img src="anya_profile.png" alt="Anya">
+                        <span>Anya Forger</span>
+                    </div>
+                    <div class="char-pod" onclick="showStrixPod('strix-b')">
+                        <img src="bond_profile.png" alt="Bond">
+                        <span>Bond Forger</span>
+                    </div>
+                </div>
+                <div class="strix-content">
+                    <h2 id="strix-title" style="color: var(--spy-teal); border-bottom: 3px solid var(--accent-gold); padding-bottom:10px;">OPERATION STRIX</h2>
+                    <div class="pod-scroll" id="strix-body">Operation Success</div>
+                    <button class="close-btn" onclick="closeStrixModal()">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logs = {
+            'l1': "Before becoming a spy, Loid Forger, originally a child of war, experienced significant childhood trauma that resulted in the loss of both his family and his sense of innocence. Growing up in an unstable environment, Loid was constantly exposed to violence, fear, and instability, all of which came to a breaking point with the death of his parents and the destruction of his childhood home. Additionally, the loss of his friends further distanced him from any sense of a normal childhood. These experiences forced him to mature prematurely, replacing what should have been regular childhood development with keen survival instincts. As a result, Loid's early life is defined by tragedy and grief, shaping his later belief that a peaceful world must be created in order to prevent further suffering similar to his.",
+            'l2': "Following his childhood losses, Loid joined the military as a teenager, marking a shift from being a victim of war to an active participant in it. His decision, led by both necessity and a desire for stability, brought him even deeper into conflict, control, and discipline. Military life required him to suppress his emotions in order to function effectively, creating a strict mindset focused on duty over individuality. Rather than properly working through his past trauma, Loid adapted by using duty and purpose to cope with what he had lost. This period of his life, although short, had a strong impact and played a major role in shaping the emotionally detached persona that he would later adopt as an elite spy.",
+            'l3': "Post-war, Loid was recruited by the Westalis Intelligence Agency (WISE) to become a spy for the country, fully committing himself to a life of secrecy, deception, and emotional detachment, taking on the codename “Twilight.” Operating under countless aliases, including the name Loid Forger, he has adapted to the constant shifts and changes that come with his role. He is known to be an elite agent who operates between day and night, prioritizing the success of the mission above all else, even personal connections. However, this lifestyle does take a toll, even on such seasoned and experienced agents as himself, reinforcing the idea of attachments being a liability, leading to years of deep emotional suppression and avoidance of genuine relationships. Over time, detachment shifted from a professional necessity to the core of his identity. While this indeed helps him function effectively in his role as a spy, it also isolates him, preventing him from addressing his unresolved trauma.",
+            'y1': "Yor Forger\nOrigin: Ostania.\nAt 12 years old, Yor Briar was left orphaned during the Second East-West War, an event that tore her comfortable life apart. With no one left to care for her or her younger brother, she was forced to grow up too quickly in order to survive. To secure a stable income and protect her younger brother, Yor turned to assassination, one of the few paths that guaranteed a paycheck in Ostania’s war-torn society. Although she took the job out of necessity, it marked the beginning of her internal conflict between her humanity and job as a killer. This experience planted the seeds for her struggles with identity and connection later on in her life.",
+            'y2': "As Yor grew older, she found herself juggling a double life that required constant vigilance and emotional control. By day, she worked as a quiet office clerk for the City Hall, trying to seem as normal as possible. By night, however, she transformed into the deadly assassin known as the “Thorn Princess.” This drastic contrast shift in identities left her with no space to confide in others or express who she truly was. As such, Yor became increasingly isolated and found difficulty in forming genuine relationships, even with her little brother. Over time, the isolation took its toll on her, leaving her to feel incredibly lonely and act awkwardly in social situations.",
+            'y3': "As a young adult, Yor began to face growing social pressure due to her socially awkward behaviour and unmarried status. In Ostania’s highly controlled and suspicious society, eerily similar to East Germany’s, individuals who stood out were often scrutinized and reported, creating a sense of fear in Yor. Her coworkers frequently gossiped about her, labeling her as strange and robotic, leaving her to feel more insecure. These rumors also posed a threat to her secret identity as an assassin, which Yor needed to keep hidden at all costs. Fearing exposure, Yor felt increasing pressure to conform to social expectations, which led her to seek out someone like Loid: a false partner would allow her to protect her identity and job in a place as watchful as Ostania.",
+            'a1': "Before being adopted by Loid Forger, Anya Forger, previously known as Test Subject 007, was held in an unknown research facility where she was experimented on from a very young age. The experiments to which she was subjected were designed to create her telepathic ability, separating her from the outside world, parents, and any chance at a normal childhood. The cold and neglectful environment within the facility left Anya with a severe fear of isolation. Additionally, the facility constantly abused Anya by harnessing her ability and using her as a tool for their own purposes, rather than letting her live a regular life. During the main plot of the show, Anya is five years old, meaning that the experimentation to create her abilities took place in the few years prior. ",
+            'a2': "Following Anya’s escape from the research facility, Anya experienced repeated abandonment from multiple adoptive families, which further reinforced the instability in her early childhood. Her new telepathic ability was a result of prior experimentation, making it difficult for her to interact with others her age and have a regular childhood. These abilities allowed her to hear the unfiltered thoughts of those around her, often leading to misunderstandings and discomfort that pushed families to return her to the orphanage time and time again shortly after adoption. As a result of her early childhood treatment, Anya developed an acute awareness of rejection and a strong fear of being unwanted, further intensifying her emotional distress and vulnerability. These repeated losses created a strong desire for a permanent family, which became a driving factor in the show's main plot. ",
+            'a3': "Although telepathic abilities may be advantageous in certain situations, they are actually a main source of adversity in Anya’s childhood. Due to her young age and lack of training, Anya has little to no control over her abilities. The constant exposure to others’ thoughts, especially negative and overwhelming ones, subjects her to emotional and, later, physical distress that she has yet to fully process. The lack of guidance and understanding of her own abilities forces Anya to navigate social interactions and the world on her own, often reacting to information that she does not completely understand or can not openly explain. Her behavior is often perceived as strange, unusual, and unpredictable, leading to her social isolation from others. Additionally, her inability to control when she hears others’ thoughts removes a sense of privacy or emotional security. Rather than benefiting her, Anya's telepathy has become a burden that consistently complicates her ability to connect with others, reinforcing her isolation and dependence on finding a secure and accepting environment",
+            'b1': "Bond Forger\nOrigin: Project Apple.\nBond was originally part of an experiential project that tested forced clairvoyance on him, stripping him of any chance at a normal life. These experiments granted him precognitive abilities, allowing him to see glimpses of the future, which, unfortunately, came at a huge cost to his physical and emotional well-being. Throughout his early life, Bond endured severe neglect, physical torture, and harsh living conditions that created this idea that he only existed as a subject to be used. He had no comforts, companions or safety, leading him to feel isolated and constantly fearful. This led to Bond developing a deep fear of abandonment and an expectation that suffering would be a constant in his life.",
+            'b2': "As Bond’s precognitive abilities developed, they became increasingly overwhelming and difficult to manage. He began experiencing involuntary and fragmented visions of the future, many of which involved death, destruction, or the loss of those around him. These visions often came without warning, leaving him feeling confused and anxious on how to act on the terror he saw. As a result, Bond responded impulsively in an attempt to prevent any of the tragedies that constantly haunted him. These factors caused a huge mental strain on Bond, leaving him unable to fully understand his abilities and reinforced his fear of the world around him.",
+            'b3': "After the experimental project was shut down, Bond found himself unable to escape. He was trafficked into the black market and treated as a commodity, leading to him being passed between multiple handlers: those being people who saw him as a tool to exploit for profit or power. Eventually, he was acquired by a terrorist organization that intended to use him as a “bomb dog” in order to assassinate a powerful Westalian Minister. In Bond’s cruel reality, his life was treated with no value beyond what others could gain through him. He witnessed violence and death firsthand, furthering his fear and helplessness. This period truly broke him down and solidified his belief that he was a tool to be abused rather than a being worthy of love.",
+            'strix': "",
+            'strix-l': "#1: Strain of Operation Strix\n\nAs the lead agent responsible for Operation Strix, Loid experiences the constant pressure of ensuring the mission’s success at all times due to its complex, multi-component nature and deep connections to international peace and political stability. Additionally, the operation relies on secrecy, precision, and flawless execution, all of which fall on Loid, so even a minor mistake or misstep can lead to a potentially catastrophic outcome. Furthermore, aside from maintaining his identity as “Twilight”, Loid must also keep up his fake identity as a psychiatrist while managing the guise of a regular functional family. Balancing these overlapping responsibilities places a massive physical and mental strain on Loid, especially since he also takes on additional side-missions beyond Operation Strix. Over time, Loid’s responsibilities build up and contribute to major exhaustion and burnout, showing how Loid’s commitment to protecting world peace often comes at the expense of his own health and well-being.\n\n#2: Psychological & Emotional Conflict\n\nAlthough Loid initially assembled the Forger family as a tool for Operation Strix, his prolonged exposure to family life slowly created an emotional conflict within him. As a spy, Loid was trained to avoid attachment of any kind, believing that it would compromise his efficacy and efficiency. However, through his experiences with Yor, Anya, and Bond, he began to express genuine care and attention for his forged family. While emotion and humanity’s gradual introduction back into Loid’s life is a positive change for his emotional healing, he is constantly aware that his family is not real, and that his sole focus should be on the success of the mission, nothing else. The growing attachment that Loid feels builds tension within him as he struggles to align his role as a spy with his developing desire for authentic emotional connections. Additionally, Loid also feels guilty about bringing Anya, an innocent child, into the mission since, as far as he knows, she is completely unaware of the dangerous setup or of what transpires as he fulfills his duties. His guilt towards Anya goes beyond simply endangering an innocent child in the mission, but also stems from his childhood experiences and his promise to prevent others from suffering the same way he did. His further deception of Yor contributes to a growing sense of regret, especially as he has begun to trust her more. Furthermore, Loid has begun to doubt his ability and effectiveness as a spy as a result of his developing emotions towards the Forgers, forcing him to question the role and identity he has built around secrecy and emotional detachment.\n\n#3: Direct Threats\n\nOn top of just managing the logistics and execution of his mission, Loid’s secret persona, “Twilight,” is simultaneously being hunted down by the State Security Service (SSS). The SSS is Ostania’s secret police division and one of Loid’s and all Westalis spies’ most dangerous obstacles because of their objective of hunting down and killing spies. Since Loid operates as a top agent for WISE and the sole spy responsible for Operation Strix, getting discovered by the SSS would jeopardize the entire operation, risking increased political tensions and possibly yet another war between the two nations. The risk of exposure is exponentially multiplied when Loid discovers that an officer of the SSS is none other than Yor’s younger brother, Yuri Briar. Yuri Briar is protective of his sister by nature, to the extent of being suspicious of any other male figures in her life, including Loid, putting him in not only an uncomfortable, but also potentially deadly situation. However, in order to avoid suspicions for their own selfish purposes, both Loid and Yor express immense effort into maintaining the appearance of a stable family, as fabricated as it is, for the sake of their own personal agendas. Eventually, as a result of their efforts, Yuri unknowingly ends up forming a close bond with Loid, the very spy he has been tasked to hunt down. The constant need to conceal his identity while maintaining a believable facade intensifies Loid’s stress and further emphasizes the instability of the life he has created.\n\nConnection to Thesis:\n\nLoid’s relationship with the Forger family shows the clear transition and change that he has gone through from complete emotional isolation, trauma, and secrecy, into genuine human connections. Years of war, loss, and emotional detachment trained Loid to view relationships as tools to achieve goals rather than meaningful bonds. However, his experiences with Yor, Anya, and Bond have gradually reintroduced him to the humanity and warmth that he lacked for so long. Through Yor, he experiences a relationship of trust and mutual partnership rather than psychological manipulation, and through Anya and Bond, Loid is able to rediscover and reconnect with the innocence and peace that the war took from him. Although Loid originally created the family solely for the success of Operation Strix, his growing attachment to them shows his gradual emotional healing and the crumbling of emotional barriers that he had spent so long building. The Forgers became much more than just a tool in his mission; they became a source of comfort, belonging, and purpose outside of his role as “Twilight”. Loid’s development throughout the course of the story demonstrates how the very emotional attachments he once feared and pushed away ultimately became the very things that helped heal him the most.",
+            'strix-y': "#1 Maintaining a Secret Identity\n\nYor spends the majority of her life working as an assassin for the “Garden.” It is the place that gave her the chance for Yuri and her to survive, even if the work was incredibly dangerous. After Yor’s initial adjustment to the intensity of the assassin world, she finds the work to be empowering: she can take out her frustration and anger on corrupt politicians and traitors to Ostania. As a result, Yor gets attached to her work, despite Ostania’s authoritarian and suspicious governing. However, Yor sees how other single older women like her are treated with hostility and suspicion by both the government and their own friends. If she wants to prevent all and any threat to her identity, she’ll need to get married, which is where Loid comes into play. Although she and him are not aware of each other’s true identities, she finds that he can perfectly play the partner she needs in order for her to blend in with society. Additionally, Loid and Anya never question or interfere with her work. They give her the cover she needs without the extra work needed to hide her secrets from Loid. In Anya’s case as a telepath, she knows Yor’s secrets, but keeps it quiet so she does not scare Yor (her real chance at having a mother) away.\n\n#2 The Meaning of Family\n\nThough Yor loves Yuri, she will not always have time to spend with him. Between her work as an assassin and his job as a SSS officer, the two of them lead very different lives with little opportunity to honestly communicate with each other. The nature of their work requires secrecy, interfering with the honest, caring bond they had as children. They are adults expected to marry and start their own families rather than cling onto the bond that allowed them to survive during the East-West War. Through Loid and Anya, Yor finds another chance at having a family. Loid plays the part of a traditional husband who handles the finances, plans dates, teaches his daughter, and stands by Yor’s side. He acts as the perfect husband, which lets Yor finally feel taken care of for the first time in years. Additionally, Anya gives Yor the opportunity to be a mother and provide that care that she never had the chance to give Yuri. Yor is fiercely protective of Anya, protecting her from danger, comforting her when she feels scared, and encouraging her, despite her subpar academics. Unlike the home she grew up in, Yor is able to find peace with her situation and be content. Over time, Yor’s sham marriage with Loid turns into a genuine friendship and blossoming romance between them. Yor starts protecting the Forger family out of love for them instead of fear for her identity. She grows attached to each member and finds a sense of belonging with them that was taken away from her so long ago. For the first time in years, Yor’s life revolves around more than being the Garden’s tool.\n\nConnection to Thesis:\n\nYor’s relationship with the Forgers demonstrates how her childhood adversity and isolation became the foundation for a genuine connection between herself and her family. Her traumatic childhood, full of war, murder, and loneliness left her unsure of herself and the value in her life. However, her experiences with Loid and Anya help her embrace being vulnerable, showing affection, and having someone like her to lean on. Her nurturing nature gives Anya that motherly attention she never before received and slowly breaks down the walls that Loid has up against anyone he gets close to. The Forger family gives Yor a warm home where she will always be welcome, despite who she is. Although the Forgers are a family created through deception, the honest bonds they make with each other, through the trust they share, allows them to understand and heal each other. Yor’s development through the story shows how the struggles that once isolated the Forgers, acts as a foundation to form a real family.",
+            'strix-a': "#1: Social & Academic Challenges\n\nAs a part of Operation Strix, Anya was enrolled at Eden Academy with the hidden goal of befriending Damian Desmond, the son of Donovan Desmond, Operation Strix’s ultimate target. After enrolling at the academy, Anya faces significant academic and social challenges due to her age and background. Although believed to be six years old, Anya is actually only five, putting her at an intellectual disadvantage in an institution designed for elite, academically advanced students. As a result, she is not only unable to excel but also consistently struggles to maintain passing grades and is often under threat of expulsion. In addition to her academic struggles, Anya also experiences social isolation from her peers and is labeled as a “commoner” amongst her wealthy and prestigious classmates. Anya’s early interactions at Eden were marked by ridicule, exclusion, and bullying, particularly from students who viewed social status as a measurement of worth, such as Damian. These challenges further reinforced Anya’s insecurities with belonging and acceptance, forcing her to navigate a foreign environment in which she constantly feels inadequate.\n\n#2: Mental Burden of World Peace\n\nAnya’s telepathic ability gives Anya knowledge of Operation Strix and her parents’ true identities, placing an immense psychological burden on her, despite being just a child. As the only member of the Forger family aware of Loid being a spy and Yor being an assassin, Anya feels personally responsible for the success of their missions and for helping maintain peace between Westalis and Ostania. This pressure becomes especially clear as she attempts to befriend Damian Desmond, as she believes that failure on her part could contribute to the outbreak of another war. However, unlike the adults around her, Anya is unable to openly discuss her concerns and fears, forcing her to internalize anxiety far beyond what someone her age should be experiencing or processing. Additionally, due to her past abandonment, Anya has also developed a constant fear that if she were to become unsuccessful, Loid and Yor would leave her, abandoning her yet again. This fear intensifies whenever she sees her parents succeeding without her involvement, leading Anya to link her usefulness within the family to her self-worth.\n\nConnection to Thesis:\n\nAnya’s relationship with the Forger family shows how her personal adversities with abandonment that had once isolated her ultimately led her to a stable home and the emotional security that she had lacked. Experimentation, loneliness, and rejection from a young age caused Anya to develop a strong fear of abandonment and view herself as valuable only when she could be useful to others. However, through her life with her newfound family, she has gradually allowed herself to experience care, protection, and acceptance that she has always been looking for. Through Yor, Anya receives the nurturing and affection of the mother figure she never had, and Loid provides her with the stability and protection that the research facility could never offer. Additionally, Bond became Anya’s biggest source of comfort and companionship, making her feel less alone and helping Anya navigate her feelings and emotions, ultimately leading her to form genuine relationships in her life, despite the burden of her telepathic abilities. Although the Forger family was originally built through deception and personal agendas, the emotional bonds formed between them become real and even more authentic over time. Anya’s development from a lonely, abandoned orphan to someone finally able to experience love, stability, and acceptance shows how even though adversity had once separated her from the world, it ultimately became the foundation for her rediscovery of connection, belonging, and emotional healing with the Forger family. ",
+            'strix-b': "#1 Living to Suffer\n\nBefore joining the Forger family, Bond’s entire life was shaped by suffering, fear, and exploitation. As one of the subjects of Project Apple, a set of illegal experiments pushing human capabilities, he was abused, neglected, isolated, and forcibly given clairvoyant abilities. His captors viewed him as an end to their means rather than a living being deserving of respect and care, and treated him as such. Through countless experiments and harsh environments, Bond was conditioned to associate survival with obedience and pain. Even after developing his precognitive powers, his suffering only intensified, as he was forced to see visions of death and destruction that he did not understand and could not control. The anguish, fear, and pain from his past and the horrific visions he saw left him in a state of constant fear and anxiety. After the shutdown of Project Apple, Bond was trafficked into the black market where he faced even more hardship from cruel owners. This eventually led to his placing in a terrorist organization that intended to kill him for their own gain. Bond faced so much suffering and violence that kept pushing the idea that he was a tool rather than a living, feeling being. By the time he makes it to the Forgers, he is an anxious and insecure mess who can only respond through panic.\n\n#2 Love and Protection\n\nBond’s adoption into the Forger daily marks the first time that he experiences genuine care, safety, and emotional connection. Unlike the researchers or previous owners who exploited him, the Forgers treat Bond as a valuable member of the family, whom they can not live without. This new environment allows Bond to live comfortably rather than in constant fear. The way he uses his abilities only depends on his will rather than the greed or interests of others in his past. In particular, his bond with Anya becomes really important to him since they share similar fears of being abandoned due to their inhuman abilities. However, that does not stop Anya from treating Bond with kindness, while Bond remains her eternally loyal pet. Additionally, Bond develops a strong attachment to Loid, risking his own life to prevent any dangerous future that could harm his savior and the family he loves so dearly. As a result, Bond’s actions turn into those driven by his love for his family rather than the fear that was once drilled into him. Through the Forger family, Bond accepts that he is just as deserving of love, happiness and care as anyone else.\n\nConnection to Thesis:\n\nBond’s experience reinforces the thesis by showing how his adversity and trauma created a foundation for his healing in the Forger family. Years of experimentation, abuse, and exploitation once broke him, making him see himself as a tool to be trashed once it expired. However, his time in the Forger family shows him what it is like to be loved and to be treated with care. Through Anya he finds a companion and through Loid he finds a protector, things he could only dream of having. In return, Bond’s loyalty and willingness to protect the Forgers helps strengthen the connection they have with one another, and turns it into something even more real. Bond’s love and loyalty to the Forgers slowly helps to turn the tides that shifted the family from one made out of deception to something unmistakably honest."
+        };
+
+        let piecesEarned = 0;
+        let earnedColors = [];
+        let piecesPlaced = 0;
+        let currentId = '';
+        let strixUnlocked = false;
+        let counterUnlocked = false;
+
+        function runIntroSequence() {
+            const bgMusic = document.getElementById('background-music');
+            bgMusic.play().catch(error => console.log('Audio playback failed:', error));
+            
+            const folder = document.getElementById('folder-trigger');
+            folder.classList.add('open');
+            setTimeout(() => {
+                document.getElementById('start-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    document.getElementById('intro-page').style.display = 'flex';
+                    setTimeout(() => { 
+                        document.getElementById('briefing-card').classList.add('visible'); 
+                    }, 200);
+                }, 1200);
+            }, 2000);
+        }
+
+        function showThesis() {
+            document.getElementById('intro-page').style.display = 'none';
+            document.getElementById('thesis-page').style.display = 'flex';
+            setTimeout(() => { 
+                document.getElementById('thesis-card').classList.add('visible'); 
+            }, 100);
+        }
+
+        function enterArchive() {
+            document.getElementById('thesis-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function openPod(id) {
+            currentId = id;
+            document.getElementById('modal-title').innerText = document.getElementById(id).innerText;
+            document.getElementById('modal-body').innerText = logs[id];
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('text-view').style.display = 'block';
+            document.getElementById('puzzle-view').style.display = 'none';
+            document.getElementById('final-view').style.display = 'none';
+            document.getElementById('strix-view').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            const node = document.getElementById(currentId);
+            if(node && !node.classList.contains('completed')) {
+                node.classList.add('completed');
+                const char = currentId[0];
+                const step = parseInt(currentId[1]);
+                if(step < 3) {
+                    document.getElementById(char + (step + 1)).classList.add('unlocked');
+                } else {
+                    triggerCollectionAnim(char);
+                }
+            }
+        }
+
+        function triggerCollectionAnim(char) {
+            const colorMap = {'l': 'yellow', 'y': 'red', 'a': 'pink', 'b': 'blue'};
+            const color = colorMap[char];
+            if(!earnedColors.includes(color)) {
+                earnedColors.push(color);
+                piecesEarned++;
+                const fly = document.createElement('img');
+                fly.src = `${color}.png`;
+                fly.className = 'piece-flying';
+                fly.style.left = "50%"; fly.style.top = "50%";
+                document.body.appendChild(fly);
+                setTimeout(() => {
+                    fly.remove();
+                    const counter = document.getElementById('piece-counter');
+                    counter.innerText = `${piecesEarned}/4`;
+                    if(piecesEarned === 4) {
+                        strixUnlocked = true;
+                        const strixNode = document.getElementById('node-strix');
+                        strixNode.classList.add('ready');
+                        document.getElementById('status-tag').innerText = "[ STATUS: STRIX ACTIVATED ]";
+                        document.getElementById('strix-section').scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 1200);
+            }
+        }
+
+        function openPuzzleAssembly() {
+            if(!counterUnlocked) return alert("Access Operation Strix first!");
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('text-view').style.display = 'none';
+            document.getElementById('puzzle-view').style.display = 'flex';
+            document.getElementById('final-view').style.display = 'none';
+            document.getElementById('strix-view').style.display = 'none';
+            const tray = document.getElementById('tray');
+            tray.innerHTML = '';
+            earnedColors.forEach(c => {
+                const img = document.createElement('img');
+                img.src = `${c}.png`;
+                img.id = `piece-${c}`;
+                img.className = 'piece-img';
+                img.draggable = true;
+                img.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id);
+                tray.appendChild(img);
+            });
+        }
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.ondragover = (e) => e.preventDefault();
+            zone.ondrop = (e) => {
+                const id = e.dataTransfer.getData('text');
+                if(zone.getAttribute('data-req') === id) {
+                    const el = document.getElementById(id);
+                    zone.appendChild(el);
+                    el.style.width = '100%'; el.style.height = '100%';
+                    piecesPlaced++;
+                    if(piecesPlaced === 4) document.getElementById('finish-puzzle').style.display = 'block';
+                }
+            };
+        });
+
+        function finalizePuzzle() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('text-view').style.display = 'none';
+            document.getElementById('puzzle-view').style.display = 'none';
+            document.getElementById('final-view').style.display = 'flex';
+            document.getElementById('strix-view').style.display = 'none';
+            document.getElementById('strix-conclusion-text').innerText = logs['strix'];
+        }
+
+        function openStrixReport() {
+            if(!strixUnlocked) return;
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('strix-view').style.display = 'flex';
+            document.getElementById('text-view').style.display = 'none';
+            document.getElementById('puzzle-view').style.display = 'none';
+            document.getElementById('final-view').style.display = 'none';
+            document.getElementById('strix-title').innerText = "OPERATION STRIX";
+            document.getElementById('strix-body').innerText = logs['strix'];
+        }
+
+        function showStrixPod(id) {
+            const titles = {
+                'strix-l': 'Loid Forger - Operation Strix',
+                'strix-y': 'Yor Forger - Operation Strix',
+                'strix-a': 'Anya Forger - Operation Strix',
+                'strix-b': 'Bond Forger - Operation Strix'
+            };
+            document.getElementById('strix-title').innerText = titles[id];
+            document.getElementById('strix-body').innerText = logs[id];
+        }
+
+        function closeStrixModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            const strixNode = document.getElementById('node-strix');
+            strixNode.classList.remove('ready');
+            strixNode.classList.add('accessed');
+            counterUnlocked = true;
+            const counter = document.getElementById('piece-counter');
+            counter.classList.remove('counter-locked');
+            counter.classList.add('pulse');
+        }
+
+        window.addEventListener('load', function() {
+            const bgMusic = document.getElementById('background-music');
+            bgMusic.volume = 0.6;
+        });
+
+        window.addEventListener('beforeunload', function() {
+            const bgMusic = document.getElementById('background-music');
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        });
+    </script>
+</body>
+</html>
