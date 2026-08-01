@@ -81,7 +81,8 @@ Finalizing the puzzle reveals the conclusion screen with the closing analysis te
 
 *All character names, images, and story elements are the property of Tatsuya Endo / Shueisha / VIZ Media.*
 
-## Live Site
 ---
+## Live Site
+
 > https://spy-family-visual-essay.onrender.com/
 ---
